@@ -1,0 +1,40 @@
+# 2026-01-30 Linux 安全防護實作
+
+## 今天做了什麼
+- 安裝 UFW 防火牆
+- 安裝 ClamAV 防毒
+- 設定 cron 自動化掃描
+- SSH KEY問題解決
+## 遇到的問題
+### 問題1：sudo在cron中卡住
+- 錯誤：cron執行時要求輸入密碼
+- 原因：cron沒有互動式終端
+- 解決：設定 /etc/sudoers 讓特定指令免密碼
+- 語法：`zooz981 ALL=(ALL) NOPASSWD: /usr/bin/clamscan`
+- 學到：自動化腳本不能依賴互動輸入
+
+### 問題2：掃描速度很慢
+- 現象：掃描10,680檔案花3分50秒
+- 原因：正常，因為要逐檔案檢查
+- 優化：用--exclude-dir排除快取目錄
+- 學到：效能優化要平衡安全性
+
+## 關鍵指令
+```bash
+# 檢查cron服務
+sudo systemctl status cron
+
+# 查看cron執行日誌
+sudo grep CRON /var/log/syslog
+
+# 編輯crontab
+crontab -e
+
+# 語法：分 時 日 月 週 指令
+0 3 * * 0 /path/to/script.sh
+
+# Authentication Key vs Signing Key
+ERROR: The key you are authenticating with has been marked as read only.
+
+# 測試連線
+ssh -T git@github.com
