@@ -1,0 +1,257 @@
+================================================================================
+                    NitroSense AI 風扇控制系統 - 學習筆記
+================================================================================
+
+專案日期：2026-02-10
+硬體：Acer Nitro 5 | i7-12700H | RTX 3050 4GB | 32GB RAM | 512GB+2TB SSD
+
+================================================================================
+第一天：環境設定與系統監控 (2026-02-10)
+================================================================================
+
+【1】Python 環境設定
+────────────────────────────────────────────────────────────────────────────
+遇到問題：
+  - pip 指令找不到（PATH 未設定）
+  - python 指令有時無法辨識
+
+解決方案：
+  ✓ 使用 python -m pip 取代 pip
+  ✓ Python 位置：C:\Users\eric0\AppData\Local\Programs\Python\Python312\
+  ✓ 所有指令改用：python -m pip install [套件名稱]
+
+
+【2】虛擬環境建立
+────────────────────────────────────────────────────────────────────────────
+步驟：
+  1. mkdir D:\Projects\NitroSense-AI
+  2. cd D:\Projects\NitroSense-AI
+  3. python -m venv venv
+  4. Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  5. .\venv\Scripts\Activate.ps1
+
+驗證：提示字元變成 (venv) PS D:\Projects\NitroSense-AI>
+
+
+【3】Python 3.12 相容性問題
+────────────────────────────────────────────────────────────────────────────
+錯誤訊息：
+  ModuleNotFoundError: No module named 'distutils'
+
+原因：
+  - Python 3.12 移除了 distutils 模組
+  - GPUtil 套件依賴舊的 distutils
+
+解決方案：
+  python -m pip install setuptools
+  → setuptools 提供 distutils 的相容層
+
+
+【4】已安裝套件清單
+────────────────────────────────────────────────────────────────────────────
+psutil==7.2.2          # 系統監控（CPU、RAM、硬碟、程序）
+pynvml==11.5.0         # NVIDIA GPU 監控
+setuptools>=65.0.0     # 修復 Python 3.12 相容性
+pandas==2.2.1          # 資料處理
+numpy==1.26.4          # 數值運算
+
+安裝指令：
+  python -m pip install psutil pynvml setuptools pandas numpy
+
+
+【5】系統監控功能測試結果
+────────────────────────────────────────────────────────────────────────────
+✓ CPU 監控正常
+  - 型號：Intel i7-12700H
+  - 核心數：20 執行緒（6P+8E 混合架構）
+  - 頻率：動態調整 1489-2700 MHz
+  - 使用率：即時監控正常
+  - 溫度：N/A（需要管理員權限）
+
+✓ GPU 監控正常
+  - 型號：NVIDIA GeForce RTX 3050 Laptop GPU
+  - VRAM：4096 MB
+  - 溫度：38-39°C（閒置狀態）
+  - 使用率：0%（閒置）
+  - 功耗：5.0-5.4W（閒置）
+
+✓ 記憶體監控正常
+  - 總容量：31.7 GB（32GB 實際可用）
+  - 使用率：40-41%（約 13GB）
+
+✓ 硬碟監控正常
+  - C:\ 237.8 GB (使用 75.9%)
+  - D:\ 237.8 GB (使用 58.5%)
+  - E:\ 1863.0 GB (使用 19.9%)
+
+✓ 程序監控正常
+  - 能偵測到 NitroSense.exe（Acer 風扇控制程式）
+  - 能偵測到瀏覽器、Python 等程序
+  - CPU/RAM 使用率即時統計
+
+
+【6】重要發現
+────────────────────────────────────────────────────────────────────────────
+1. NitroSense.exe 有在背景運行
+   → 代表我們能偵測到它的存在
+   → 未來可能能透過 API 或指令控制
+
+2. CPU 在省電模式下會降頻到 1.5GHz
+   → 正常行為，有負載時會自動加速
+
+3. GPU 閒置溫度 38°C，功耗 5W
+   → 很健康的待機狀態
+
+
+【7】檔案結構
+────────────────────────────────────────────────────────────────────────────
+D:\Projects\NitroSense-AI\
+├── venv\                    # Python 虛擬環境
+├── monitor.py               # 系統監控模組（完整功能版）
+├── test_monitor.py          # 簡易測試腳本
+├── requirements.txt         # 套件清單
+└── README.md                # 專案說明
+
+待建立：
+├── data_collector.py        # 數據收集器（第6天）
+├── train.py                 # AI 訓練腳本（第13-14天）
+└── ai_controller.py         # AI 風扇控制器（第15-17天）
+
+
+【8】常用指令記錄
+────────────────────────────────────────────────────────────────────────────
+# 啟動虛擬環境
+cd D:\Projects\NitroSense-AI
+.\venv\Scripts\Activate.ps1
+
+# 安裝套件
+python -m pip install [套件名稱]
+
+# 查看已安裝套件
+python -m pip list
+
+# 執行監控測試
+python test_monitor.py        # 簡易版
+python monitor.py             # 完整版（每5秒更新）
+
+# 以管理員身份執行（看CPU溫度）
+右鍵 PowerShell → 以系統管理員身份執行
+cd D:\Projects\NitroSense-AI
+.\venv\Scripts\Activate.ps1
+python monitor.py
+
+
+【9】VS Code 設定修正
+────────────────────────────────────────────────────────────────────────────
+問題：VS Code 找不到已安裝的套件
+
+原因：settings.json 強制使用系統 Python
+
+解決方案：
+  1. 刪除 settings.json 中的 python.defaultInterpreterPath
+  2. 按 Ctrl+Shift+P → 選擇 "Python: Select Interpreter"
+  3. 選擇 .\venv\Scripts\python.exe
+  4. 重新載入 VS Code
+
+
+【10】下一階段計畫
+────────────────────────────────────────────────────────────────────────────
+Phase 2: 數據收集（第6-10天）
+  □ 建立 data_collector.py
+  □ 每30秒記錄一次系統狀態
+  □ 背景運行7天
+  □ 收集 5000+ 筆數據
+
+Phase 3: 資料分析（第11-12天）
+  □ 分析使用模式
+  □ 特徵工程
+  □ 視覺化數據
+
+Phase 4: AI 訓練（第13-14天）
+  □ 訓練 Random Forest 模型
+  □ 評估準確率
+  □ 儲存模型
+
+Phase 5: 部署（第15-21天）
+  □ AI 自動控制風扇
+  □ 系統托盤程式
+  □ 預測性冷卻
+
+
+【11】學習重點整理
+────────────────────────────────────────────────────────────────────────────
+✓ Python 虛擬環境的重要性
+  → 隔離專案依賴，避免套件衝突
+
+✓ Python 3.12 的重大改動
+  → distutils 被移除，需用 setuptools 替代
+
+✓ 系統監控的關鍵技術
+  → psutil（跨平台）、pynvml（NVIDIA 專用）
+
+✓ Windows 權限管理
+  → 某些系統資訊需要管理員權限才能存取
+
+✓ 專案規劃的重要性
+  → 分階段進行，先測試再開發
+
+
+【12】成就解鎖
+────────────────────────────────────────────────────────────────────────────
+[✓] Python 環境設定完成
+[✓] 虛擬環境建立成功
+[✓] 所有套件安裝無誤
+[✓] 系統監控功能 100% 正常
+[✓] 能偵測 CPU、GPU、RAM、硬碟、程序
+[✓] 發現 NitroSense.exe 正在運行
+
+完成度：Phase 1 - 100% ✓
+
+
+【13】遇到的錯誤與解決
+────────────────────────────────────────────────────────────────────────────
+錯誤1: pip 指令找不到
+  → 改用 python -m pip
+
+錯誤2: ModuleNotFoundError: No module named 'distutils'
+  → 安裝 setuptools
+
+錯誤3: VS Code 找不到套件
+  → 選擇正確的虛擬環境解釋器
+
+錯誤4: 虛擬環境啟動失敗
+  → Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+錯誤5: GPU 偵測失敗
+  → 安裝 pynvml 而非 GPUtil（更現代）
+
+
+【14】技術筆記
+────────────────────────────────────────────────────────────────────────────
+i7-12700H 架構：
+  - 6 個 P-cores (Performance)：2.3-4.7 GHz，支援 HT（12執行緒）
+  - 8 個 E-cores (Efficiency)：1.7-3.5 GHz，不支援 HT（8執行緒）
+  - 總計：14核心 / 20執行緒
+  - L3 Cache：24MB
+  - TDP：45W（基礎）/ 115W（最大）
+
+RTX 3050 Laptop：
+  - CUDA Cores：2048
+  - VRAM：4GB GDDR6
+  - Memory Bus：64-bit（瓶頸）
+  - TGP：95W（功耗版本）
+  - 支援 DLSS、Ray Tracing
+
+監控技術：
+  - psutil.cpu_percent()：取得 CPU 使用率
+  - pynvml.nvmlDeviceGetTemperature()：取得 GPU 溫度
+  - psutil.process_iter()：列出所有程序
+
+
+================================================================================
+總結：第一天完成度 100%，環境完全準備好，可以開始數據收集階段！
+================================================================================
+
+最後更新：2026-02-10 21:57
+作者：Eric
+專案：NitroSense AI 智慧風扇控制系統
